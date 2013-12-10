@@ -10,7 +10,8 @@ import java.net.URL;
  * Created by abell on 12/9/13.
  */
 public class FlickrFetcher {
-    
+    public static final String TAG = "FlickrFetcher";
+
     byte[] getUrlBytes(String urlSpec) throws IOException {
         URL url = new URL(urlSpec);
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
@@ -35,5 +36,7 @@ public class FlickrFetcher {
         }
     }
 
-    public
+    public String getUrl(String urlSpec) throws IOException {
+        return new String(getUrlBytes(urlSpec));
+    }
 }
