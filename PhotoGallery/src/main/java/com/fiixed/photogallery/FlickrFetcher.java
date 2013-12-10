@@ -27,7 +27,7 @@ public class FlickrFetcher {
     private static final String EXTRA_SMALL_URL = "url_s";
     private static final String FORMAT = "json";
 
-    private static final String JSON_PHOTO = "photo";
+
 
     private String jsonString;
     private JSONObject picture;
