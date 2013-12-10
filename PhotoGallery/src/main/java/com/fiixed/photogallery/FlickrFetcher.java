@@ -3,11 +3,16 @@ package com.fiixed.photogallery;
 import android.net.Uri;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by abell on 12/9/13.
@@ -21,6 +26,11 @@ public class FlickrFetcher {
     private static final String PARAM_EXTRAS = "extras";
     private static final String EXTRA_SMALL_URL = "url_s";
     private static final String FORMAT = "json";
+
+    private static final String JSON_PHOTO = "photo";
+
+    private String jsonString;
+    private JSONObject picture;
 
 
 
@@ -52,7 +62,8 @@ public class FlickrFetcher {
         return new String(getUrlBytes(urlSpec));
     }
 
-    public void fetchItems() {
+    public ArrayList<GalleryItem> fetchItems() {
+        ArrayList<GalleryItem> items = new ArrayList<GalleryItem>();
         try {
             String url = Uri.parse(ENDPOINT).buildUpon()
                     .appendQueryParameter("method", METHOD_GET_RECENT)
@@ -61,10 +72,39 @@ public class FlickrFetcher {
                     .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
                     .build().toString();
             Log.i(TAG, url);
-            String jsonString = getUrl(url);
+            jsonString = getUrl(url);
             Log.i(TAG, "Received json: " + jsonString);
+
+            parseItems(items);
         } catch (IOException ioe) {
             Log.e(TAG, "Failed to fetch items", ioe);
         }
+        return items;
+    }
+
+    void parseItems(ArrayList<GalleryItem> items) {
+        try {
+            JSONObject rootJSON = new JSONObject(jsonString);
+            JSONObject photos = rootJSON.getJSONObject("photos");
+            JSONArray photo = photos.getJSONArray("photo");
+
+            for(int i = 0; i < photo.length(); i++) {
+                picture = photo.getJSONObject(i);
+                String id = picture.getString("id");
+                String title = picture.getString("title");
+                String smallurl = picture.getString(EXTRA_SMALL_URL);
+
+                GalleryItem item = new GalleryItem();
+                item.setId(id);
+                item.setTitle(title);
+                item.setUrl(smallurl);
+                items.add(item);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 }
+
