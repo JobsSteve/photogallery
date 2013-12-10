@@ -73,6 +73,8 @@ public class FlickrFetcher {
                     .build().toString();
             Log.i(TAG, url);
             jsonString = getUrl(url);
+            jsonString = jsonString.replace("jsonFlickrApi(", "");
+            jsonString = jsonString.substring(0,jsonString.lastIndexOf(")"));
             Log.i(TAG, "Received json: " + jsonString);
 
             parseItems(items);
