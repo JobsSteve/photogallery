@@ -37,7 +37,7 @@ public class PhotoGalleryFragment extends Fragment {
         mThumbnailThread.setListener(new ThumbnailDownloader.Listener<ImageView>() {
             @Override
             public void onThumbnailDownloaded(ImageView imageView, Bitmap thumbnail) {
-                if(isVisible()) {
+                if(isVisible()) {  //checks to see if the fragment is visible first
                     imageView.setImageBitmap(thumbnail);  //returns bitmaps from background thread
                 }
             }
