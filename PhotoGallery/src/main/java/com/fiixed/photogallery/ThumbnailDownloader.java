@@ -16,13 +16,17 @@ import java.util.Map;
 /**
  * Created by abell on 12/10/13.
  */
+
+/*
+AsyncTask not suited for reptitive and long-running work, better to create a dedicated background thread
+ */
 public class ThumbnailDownloader<Token> extends HandlerThread {
     private static final String TAG = "ThumbnailDownloader";
-    private static final int MESSAGE_DOWNLOAD = 0;
+    private static final int MESSAGE_DOWNLOAD = 0;  //what - user defined int
 
     Handler mHandler;
-    Map<Token, String> requestMap = Collections.synchronizedMap(new HashMap<Token, String>());
-    Handler mResponseHandler;
+    Map<Token, String> requestMap = Collections.synchronizedMap(new HashMap<Token, String>());  //stores and receives the URL associated with a particular Token
+    Handler mResponseHandler;  //handler passed from the main thread
     Listener<Token> mListener;
 
     public interface Listener<Token> {
@@ -42,9 +46,9 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
     @Override
     protected void onLooperPrepared() {
         mHandler = new Handler() {
-            public void handleMessage(Message msg) {
+            public void handleMessage(Message msg) {  //check the message type, retrieve the Token and pass it to handleRequest
                 if(msg.what == MESSAGE_DOWNLOAD) {
-                    Token token = (Token)msg.obj;
+                    Token token = (Token)msg.obj;  //user defined object to be sent with the message
                     Log.i(TAG, "Got a request for url: " + requestMap.get(token));
                     handleRequest(token);
                 }
@@ -54,21 +58,27 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
         };
     }
 
+    /*
+    adds the passed in Token-URL pair to the map
+     */
     public void queueThumbnail(Token token, String url) {
         Log.i(TAG, "Got an URL: " + url);
         requestMap.put(token, url);
 
-        mHandler.obtainMessage(MESSAGE_DOWNLOAD, token).sendToTarget();
+        mHandler.obtainMessage(MESSAGE_DOWNLOAD, token).sendToTarget();  //obtain the message, give it a Token, then send it to the message queue
     }
 
+    /*
+    where the downloading happens
+     */
     private void handleRequest(final Token token) {
         try {
             final String url = requestMap.get(token);
-            if(url == null) {
+            if(url == null) {  //check for the existance of a URL
                 return;
             }
-            byte[] bitmapBytes = new FlickrFetcher().getUrlBytes(url);
-            final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+            byte[] bitmapBytes = new FlickrFetcher().getUrlBytes(url);  //pass the URL to a new instance of FlickrFetcher
+            final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);  //construct a bitmap with the array of bytes returned from getUrlBytes
             Log.i(TAG, "Bitmap created");
 
             mResponseHandler.post(new Runnable() {

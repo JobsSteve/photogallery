@@ -8,6 +8,10 @@ import android.support.v4.app.FragmentManager;
 /**
  * Created by abell on 11/21/13.
  */
+
+/*
+reusable class to cut down on amount of code required in Activities
+ */
 public abstract class SingleFragmentActivity extends FragmentActivity {
     protected abstract Fragment createFragment();
 

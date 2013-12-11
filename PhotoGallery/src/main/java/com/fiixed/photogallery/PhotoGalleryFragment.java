@@ -30,10 +30,10 @@ public class PhotoGalleryFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-        new FetchItemsTask().execute();
+        setRetainInstance(true);  //retains the fragment state when parent Activity is destroyed
+        new FetchItemsTask().execute();  //starts the AsyncTask and runs doInBackground()
 
-        mThumbnailThread = new ThumbnailDownloader<ImageView>(new Handler());
+        mThumbnailThread = new ThumbnailDownloader<ImageView>(new Handler());  //creates a new thread and passes a handler to it
         mThumbnailThread.setListener(new ThumbnailDownloader.Listener<ImageView>() {
             @Override
             public void onThumbnailDownloaded(ImageView imageView, Bitmap thumbnail) {
@@ -49,7 +49,7 @@ public class PhotoGalleryFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
+        View v = inflater.inflate(R.layout.fragment_photo_gallery, container, false);  //inflates the layout
         mGridView = (GridView)v.findViewById(R.id.gridView);
 
         setupAdapter();
@@ -57,7 +57,7 @@ public class PhotoGalleryFragment extends Fragment {
     }
 
     void setupAdapter() {
-        if(getActivity() == null || mGridView == null) {
+        if(getActivity() == null || mGridView == null) {  //fragments can exist unattached from the activity
             return;
         }
         if(mItems != null) {
@@ -82,6 +82,9 @@ public class PhotoGalleryFragment extends Fragment {
         mThumbnailThread.clearQueue();
     }
 
+    /*
+    creates background thread
+     */
     private class FetchItemsTask extends AsyncTask<Void,Void,ArrayList<GalleryItem>> {
         @Override
         protected ArrayList<GalleryItem> doInBackground(Void... params) {
@@ -90,13 +93,15 @@ public class PhotoGalleryFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(ArrayList<GalleryItem> items) {
+        protected void onPostExecute(ArrayList<GalleryItem> items) {  //run in the main UI thread, not the background
             mItems = items;
-            //Cannot update the UI from a background thread
-            setupAdapter();
+            setupAdapter(); //Cannot update the UI from a background thread
         }
     }
 
+    /*
+    custom adapter to display photos in an ImageView
+     */
     private class GalleryItemAdapter extends ArrayAdapter<GalleryItem> {
 
         public GalleryItemAdapter(ArrayList<GalleryItem> items) {
@@ -111,8 +116,8 @@ public class PhotoGalleryFragment extends Fragment {
 
             ImageView imageView = (ImageView)convertView.findViewById(R.id.gallery_item_imageView);
             imageView.setImageResource(R.drawable.me);
-            GalleryItem item = getItem(position);
-            mThumbnailThread.queueThumbnail(imageView, item.getUrl());
+            GalleryItem item = getItem(position);  //gets the correct item for the position
+            mThumbnailThread.queueThumbnail(imageView, item.getUrl());  //triggers the image downloading
             return convertView;
         }
 

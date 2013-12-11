@@ -22,10 +22,10 @@ public class FlickrFetcher {
 
     private static final String ENDPOINT = "http://api.flickr.com/services/rest/";
     private static final String API_KEY = "f35bbfbdefd8abc3eb01b743fab6d203";
-    private static final String METHOD_GET_RECENT = "flickr.photos.getRecent";
+    private static final String METHOD_GET_RECENT = "flickr.photos.getRecent";  //defaults to most recent 100 results
     private static final String PARAM_EXTRAS = "extras";
-    private static final String EXTRA_SMALL_URL = "url_s";
-    private static final String FORMAT = "json";
+    private static final String EXTRA_SMALL_URL = "url_s";  //includes the URL for the small version of the photo if available
+    private static final String FORMAT = "json";  //chooses the json response format
 
 
 
@@ -33,14 +33,16 @@ public class FlickrFetcher {
     private JSONObject picture;
 
 
-
+    /*
+    fetches raw data from a URL and returns it as an array of bytes
+     */
     byte[] getUrlBytes(String urlSpec) throws IOException {
         URL url = new URL(urlSpec);
-        HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+        HttpURLConnection connection = (HttpURLConnection)url.openConnection(); //creates a connection object pointed at the URL
 
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            InputStream in = connection.getInputStream();
+            InputStream in = connection.getInputStream();  //connects to the endpoint
 
             if(connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 return null;
@@ -48,16 +50,19 @@ public class FlickrFetcher {
 
             int bytesRead = 0;
             byte[] buffer = new byte[1024];
-            while((bytesRead = in.read(buffer)) > 0) {
+            while((bytesRead = in.read(buffer)) > 0) {  //calls read until the connection runs out of data, InputStream yeilds bytes as they are available
                 out.write(buffer, 0, bytesRead);
             }
-            out.close();
-            return out.toByteArray();
+            out.close();  //once data is finished we close the connection
+            return out.toByteArray();  //and return the ByteArrayOutputStream array
         } finally {
             connection.disconnect();
         }
     }
 
+    /*
+    converts the result of getURLBytes into a string
+     */
     public String getUrl(String urlSpec) throws IOException {
         return new String(getUrlBytes(urlSpec));
     }
@@ -65,7 +70,7 @@ public class FlickrFetcher {
     public ArrayList<GalleryItem> fetchItems() {
         ArrayList<GalleryItem> items = new ArrayList<GalleryItem>();
         try {
-            String url = Uri.parse(ENDPOINT).buildUpon()
+            String url = Uri.parse(ENDPOINT).buildUpon()  //Uri.builder convenience class for creating properly escaped parameterized URL's
                     .appendQueryParameter("method", METHOD_GET_RECENT)
                     .appendQueryParameter("api_key", API_KEY)
                     .appendQueryParameter("format", FORMAT)
@@ -74,7 +79,7 @@ public class FlickrFetcher {
             Log.i(TAG, url);
             jsonString = getUrl(url);
             jsonString = jsonString.replace("jsonFlickrApi(", "");
-            jsonString = jsonString.substring(0,jsonString.lastIndexOf(")"));
+            jsonString = jsonString.substring(0,jsonString.lastIndexOf(")"));  //fixes json format string from Flickr
             Log.i(TAG, "Received json: " + jsonString);
 
             parseItems(items);
@@ -83,7 +88,9 @@ public class FlickrFetcher {
         }
         return items;
     }
-
+    /*
+    json parsing and adding GalleryItem objects to ArrayList
+     */
     void parseItems(ArrayList<GalleryItem> items) {
         try {
             JSONObject rootJSON = new JSONObject(jsonString);
