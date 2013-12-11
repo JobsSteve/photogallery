@@ -38,7 +38,7 @@ public class PhotoGalleryFragment extends Fragment {
             @Override
             public void onThumbnailDownloaded(ImageView imageView, Bitmap thumbnail) {
                 if(isVisible()) {
-                    imageView.setImageBitmap(thumbnail);
+                    imageView.setImageBitmap(thumbnail);  //returns bitmaps from background thread
                 }
             }
         });

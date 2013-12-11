@@ -86,15 +86,17 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
                 public void run() {
                     if(requestMap.get(token) != url)
                         return;
-                    requestMap.remove(token);
-                    mListener.onThumbnailDownloaded(token, bitmap);
+                    requestMap.remove(token);  //removes the Token from the requestMap
+                    mListener.onThumbnailDownloaded(token, bitmap); // sets the bitmap on the Token
                 }
             });
         } catch (IOException ioe) {
             Log.e(TAG, "Error downloading image", ioe);
         }
     }
-
+    /*
+    cleans all requests out of the queue incase the user rotates the screen
+     */
     public void clearQueue() {
         mHandler.removeMessages(MESSAGE_DOWNLOAD);
         requestMap.clear();
